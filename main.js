@@ -1,43 +1,65 @@
 const baseUrl = "https://b1messenger.imatrythis.tk/"
 
-const buttonLogIn = document.querySelector('#logIn')
-const form = document.querySelector('.form')
-const name = document.querySelector('#username')
-const pass = document.querySelector('#password')
-const textErreur = document.querySelector('.textErreur')
-const conv = document.querySelector('.conv')
 
-buttonLogIn.addEventListener('click',  () =>{
+const content = document.querySelector('.content')
+let token = null
 
-    getToken().then(response=>{
-        console.log(response.message)
-       if (response.message == "Invalid credentials."){
-           textErreur.innerHTML += "Identifiants incorrects."
-       }
-       else{
-           let token = response.token
-           form.classList.add('d-none')
-           conv.classList.remove('d-none')
-           getMessages(token)
+function run(){
+    if (!token){
+        renderLoginForm()
+    }
+    else{
+        fetchMessages().then(data=>{
+           renderMessages(data)
+            createFormMessage()
+
+        })
 
 
+    }
+
+}
+
+run()
 
 
+function renderLoginForm(){
+    let loginTemplate = `
+    <div class="container form">
+        <div class="fs-2 my-3">Login</div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username">
 
-
-       }
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="text" class="form-control" id="password">
+            </div>
+            <div class="textErreur mb-3"></div>
+            <button type="submit" class="btn btn-primary" id="logIn">Log in</button>
+    </div>
+    `
+    render(loginTemplate)
+    const loginButton = document.querySelector('#logIn')
+    loginButton.addEventListener('click', ()=>{
+        login()
     })
+}
 
+function render(pageContent){
+    content.innerHTML = ""
+    content.innerHTML = pageContent
+}
 
+function login(){
 
+    const username = document.querySelector('#username')
+    const password= document.querySelector('#password')
 
-})
-
-
-async function getToken(){
-    const corpsRequeteLogin = {
-        username : name.value,
-        password : pass.value
+    let corpsRequeteLogin = {
+        username : username.value,
+        password : password.value
     }
 
     const loginParams = {
@@ -46,41 +68,103 @@ async function getToken(){
         body : JSON.stringify(corpsRequeteLogin)
     }
 
-    return await fetch(`${baseUrl}login`, loginParams)
+    fetch(`https://b1messenger.imatrythis.tk/login`, loginParams)
         .then(response=>response.json())
-        .then(data=>{
-            return data
+        .then(data =>{
+            if(data.message == "Invalid credentials.")
+            {
+                renderLoginForm()
+            }else{
+                token = data.token
+                run()
+            }
         })
+
 }
 
-async function getMessages(token)
-{
-    const messagesListParams = {
-        method : 'GET',
+async function fetchMessages(){
+    const messagesParams = {
         headers : {"Content-type":"application/json",
             "Authorization":`Bearer ${token}`},
+        method : "GET"
     }
 
-    return await fetch(`${baseUrl}api/messages`, messagesListParams)
-        .then(response=>response.json())
-        .then(data=>{
-            let allMessage = data
+    return await fetch(`https://b1messenger.imatrythis.tk/api/messages`, messagesParams)
+        .then(response => response.json())
+        .then(data =>{
+            if(data.message == "Invalid credentials.")
+            {
+                renderLoginForm()
+            }else{
+                return data
+            }
+        })
 
-            allMessage.forEach((message)=>{
-                let dateCreation = new Date(message.createdAt)
-                let heures = dateCreation.getHours()
-                let minutes = dateCreation.getMinutes()
-                conv.innerHTML += `
-                <div class="d-flex mb-2">
-                    <div class="mb-1 pr-2">${message.author.username} <span class="px-1 ">:</span></div>
-                    <div class="">${message.content}</div>
-                    <div class="px-2">${heures}:${minutes}</div>
-
-                </div>
-                `
-            })
-        } )
 }
+
+function generateMessages(message){
+    let divMessage = ` <div class="row">
+                                    <div class="mb-2">${message.author.username} : ${message.content}</div>
+                              </div>      
+`
+    return divMessage
+}
+
+function renderMessages(messages){
+    let contentMessages = ""
+    messages.forEach(message=>{
+        contentMessages += generateMessages(message)
+    })
+    render(contentMessages)
+}
+
+
+function createFormMessage(){
+    let formMessage = `
+                            <div class="row">
+                                <input type="text mb-2" class="form-control" id="messageContent">
+                                <button type="button" class="btn btn-success" id="messageButton">Envoyer</button>
+                            
+                            </div>`
+    content.innerHTML+=formMessage
+    const messageButton = document.querySelector('#messageButton')
+    messageButton.addEventListener('click', ()=>{
+        postMessage()
+    })
+}
+
+
+async function postMessage(){
+
+    const message = document.querySelector('#messageContent')
+
+    let corpsMessage = {
+        content : message.value
+    }
+
+    const messageParams = {
+        headers : {"Content-type":"application/json",
+            "Authorization":`Bearer ${token}`},
+        method : "POST",
+        body :  JSON.stringify(corpsMessage)
+    }
+
+    return await fetch(`https://b1messenger.imatrythis.tk/api/messages/new`, messageParams)
+        .then(response => response.json())
+        .then(data=>{
+            console.log(data)
+            run()
+            console.log("coucou")
+        })
+
+}
+
+
+
+
+
+
+
 
 
 
