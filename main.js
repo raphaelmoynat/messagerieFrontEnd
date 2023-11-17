@@ -12,12 +12,9 @@ function run(){
         fetchMessages().then(data=>{
            renderMessages(data)
             createFormMessage()
-
+            deleteButton()
         })
-
-
     }
-
 }
 
 run()
@@ -52,6 +49,8 @@ function render(pageContent){
     content.innerHTML = pageContent
 }
 
+
+let userName = ""
 function login(){
 
     const username = document.querySelector('#username')
@@ -76,6 +75,7 @@ function login(){
                 renderLoginForm()
             }else{
                 token = data.token
+                userName = username.value
                 run()
             }
         })
@@ -103,8 +103,24 @@ async function fetchMessages(){
 }
 
 function generateMessages(message){
-    let divMessage = ` <div class="row">
-                                    <div class="mb-2">${message.author.username} : ${message.content}</div>
+    let deleteButton = ''
+    let editButton = ''
+
+    if (message.author.username === userName) {
+        deleteButton = `<button type="button" class="btn btn-danger btn-sm delete" id="${message.id}">Supprimer</button>`
+        editButton =   `<button type="button" class="btn btn-success btn-sm edit" id="${message.id}">Modifier</button>`
+    }
+
+
+    let divMessage = ` <div class="d-flex justify-content-between mb-2">
+ 
+                                   <div class="">${message.author.username} : ${message.content}</div>
+                                   <div class="d-flex">
+                                    <div class="mr-1">${deleteButton}</div>
+                                    <div>${editButton}</div>
+                                    
+                                   </div>
+
                               </div>      
 `
     return divMessage
@@ -116,6 +132,7 @@ function renderMessages(messages){
         contentMessages += generateMessages(message)
     })
     render(contentMessages)
+    deleteButton()
 }
 
 
@@ -154,9 +171,37 @@ async function postMessage(){
         .then(data=>{
             console.log(data)
             run()
-            console.log("coucou")
         })
 
+}
+
+
+async function deleteMessage(idMessage){
+
+    const messageParams = {
+        headers : {"Content-type":"application/json",
+            "Authorization":`Bearer ${token}`},
+        method : "DELETE"
+    }
+
+    return await fetch(`https://b1messenger.imatrythis.tk/api/messages/delete/${idMessage}`, messageParams)
+        .then(response => response.json())
+        .then(data=>{
+            console.log(data)
+            run()
+        })
+}
+
+
+function deleteButton() {
+    const deleteButtons = document.querySelectorAll('.delete');
+    deleteButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            console.log("coucou")
+            const messageId = button.id
+            deleteMessage(messageId)
+        })
+    })
 }
 
 
