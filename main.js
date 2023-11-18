@@ -3,6 +3,7 @@ const baseUrl = "https://b1messenger.imatrythis.tk/"
 
 const content = document.querySelector('.content')
 let token = null
+let messageId = null
 
 function run(){
     if (!token){
@@ -13,6 +14,7 @@ function run(){
            renderMessages(data)
             createFormMessage()
             deleteButton()
+            editButton()
         })
     }
 }
@@ -112,17 +114,15 @@ function generateMessages(message){
     }
 
 
-    let divMessage = ` <div class="d-flex justify-content-between mb-2">
- 
-                                   <div class="">${message.author.username} : ${message.content}</div>
-                                   <div class="d-flex">
-                                    <div class="mr-1">${deleteButton}</div>
-                                    <div>${editButton}</div>
-                                    
-                                   </div>
+    let divMessage = `
+        <div class="d-flex justify-content-between mb-2" id="message-${message.id}">
+            <div>${message.author.username} : ${message.content}</div>
+            <div class="d-flex">
+                <div class="mr-1">${deleteButton}</div>
+                <div>${editButton}</div>
+            </div>
+        </div>`
 
-                              </div>      
-`
     return divMessage
 }
 
@@ -133,6 +133,7 @@ function renderMessages(messages){
     })
     render(contentMessages)
     deleteButton()
+    editButton()
 }
 
 
@@ -145,8 +146,17 @@ function createFormMessage(){
                             </div>`
     content.innerHTML+=formMessage
     const messageButton = document.querySelector('#messageButton')
-    messageButton.addEventListener('click', ()=>{
-        postMessage()
+    messageButton.addEventListener('click', () => {
+        const messageContent = document.querySelector('#messageContent').value
+
+        if (messageId) {
+            editMessage(messageId)
+        } else {
+            postMessage(messageContent)
+        }
+
+        document.querySelector('#messageContent').value = ''
+        messageId = null
     })
 }
 
@@ -194,7 +204,7 @@ async function deleteMessage(idMessage){
 
 
 function deleteButton() {
-    const deleteButtons = document.querySelectorAll('.delete');
+    const deleteButtons = document.querySelectorAll('.delete')
     deleteButtons.forEach((button) => {
         button.addEventListener('click', () => {
             console.log("coucou")
@@ -202,6 +212,39 @@ function deleteButton() {
             deleteMessage(messageId)
         })
     })
+}
+
+function editButton(){
+    const editButtons = document.querySelectorAll('.edit')
+    editButtons.forEach((button) => {
+        button.addEventListener('click', ()=> {
+            console.log("coucou")
+            messageId = button.id
+        })
+    })
+}
+
+async function editMessage(idMessage){
+    const messageContent = document.querySelector('#messageContent').value
+
+    const modifiedMessage = {
+        content: messageContent
+    }
+
+    const messageParams = {
+        method : "PUT",
+        headers : {"Content-type":"application/json",
+            "Authorization":`Bearer ${token}`},
+        body : JSON.stringify(modifiedMessage)
+    }
+
+    return await fetch(`https://b1messenger.imatrythis.tk/api/messages/${idMessage}/edit`, messageParams)
+        .then(response => response.json())
+        .then(data=>{
+            console.log(data)
+            messageId = null
+            run()
+        })
 }
 
 
