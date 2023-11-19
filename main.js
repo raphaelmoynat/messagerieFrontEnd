@@ -1,6 +1,3 @@
-const baseUrl = "https://b1messenger.imatrythis.tk/"
-
-
 const content = document.querySelector('.content')
 let token = null
 let messageId = null
@@ -27,16 +24,16 @@ function renderLoginForm(){
     <div class="container form">
         <div class="fs-2 my-3">Login</div>
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username">
+                <label for="username" class="form-label fs-5">Username</label>
+                <input type="text" class="form-control fs-5" id="username">
 
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="text" class="form-control" id="password">
+                <label for="password" class="form-label fs-5">Password</label>
+                <input type="text" class="form-control fs-5" id="password">
             </div>
             <div class="textErreur mb-3"></div>
-            <button type="submit" class="btn btn-primary" id="logIn">Log in</button>
+            <button type="submit" class="btn btn-primary fs-5" id="logIn">Log in</button>
     </div>
     `
     render(loginTemplate)
@@ -107,20 +104,33 @@ async function fetchMessages(){
 function generateMessages(message){
     let deleteButton = ''
     let editButton = ''
+    let replyButton = ''
 
     if (message.author.username === userName) {
-        deleteButton = `<button type="button" class="btn btn-danger btn-sm delete" id="${message.id}">Supprimer</button>`
-        editButton =   `<button type="button" class="btn btn-success btn-sm edit" id="${message.id}">Modifier</button>`
+        deleteButton = `<i class="bi bi-trash3 delete fs-4" style="cursor: pointer;" id="${message.id}" ></i>
+`
+        editButton =   `<i class="bi bi-pencil edit fs-4" style="cursor: pointer;" id="${message.id}"></i>`
+    }
+
+    else{
+        replyButton = '<i class="bi bi-arrow-up-right fs-5" style="cursor: pointer;"></i>'
     }
 
 
     let divMessage = `
-        <div class="d-flex justify-content-between mb-2" id="message-${message.id}">
-            <div>${message.author.username} : ${message.content}</div>
+        <div class="d-flex justify-content-between align-items-center mb-2 message" id="message-${message.id}">
+           
+            <div class="fs-5 d-flex col-10">
+                <div class="col-4">${message.author.username} : </div> 
+                <div class="col-6">${message.content}</div>
+            </div>
             <div class="d-flex">
                 <div class="mr-1">${deleteButton}</div>
                 <div>${editButton}</div>
+                <div>${replyButton}</div>
+                
             </div>
+            
         </div>`
 
     return divMessage
@@ -140,8 +150,8 @@ function renderMessages(messages){
 function createFormMessage(){
     let formMessage = `
                             <div class="row">
-                                <input type="text mb-2" class="form-control" id="messageContent">
-                                <button type="button" class="btn btn-success" id="messageButton">Envoyer</button>
+                                <input type="text mb-2" class="form-control border border-success fs-5" id="messageContent">
+                                <button type="button" class="btn btn-success fs-5" id="messageButton">Envoyer</button>
                             
                             </div>`
     content.innerHTML+=formMessage
@@ -228,7 +238,7 @@ async function editMessage(idMessage){
     const messageContent = document.querySelector('#messageContent').value
 
     const modifiedMessage = {
-        content: messageContent
+        content: messageContent + " (edited)"
     }
 
     const messageParams = {
@@ -247,6 +257,10 @@ async function editMessage(idMessage){
         })
 }
 
+
+function replyButton(){
+
+}
 
 
 
