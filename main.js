@@ -88,7 +88,7 @@ async function fetchMessages(){
         method : "GET"
     }
 
-    return await fetch(`https://b1messenger.imatrythis.tk/api/messages`, messagesParams)
+    return await fetch(`https://b1messenger.imatrythis.com/api/messages`, messagesParams)
         .then(response => response.json())
         .then(data =>{
             if(data.message == "Invalid credentials.")
@@ -204,7 +204,7 @@ async function deleteMessage(idMessage){
         method : "DELETE"
     }
 
-    return await fetch(`https://b1messenger.imatrythis.tk/api/messages/delete/${idMessage}`, messageParams)
+    return await fetch(`https://b1messenger.imatrythis.com/api/messages/delete/${idMessage}`, messageParams)
         .then(response => response.json())
         .then(data=>{
             console.log(data)
@@ -248,7 +248,7 @@ async function editMessage(idMessage){
         body : JSON.stringify(modifiedMessage)
     }
 
-    return await fetch(`https://b1messenger.imatrythis.tk/api/messages/${idMessage}/edit`, messageParams)
+    return await fetch(`https://b1messenger.imatrythis.com/api/messages/${idMessage}/edit`, messageParams)
         .then(response => response.json())
         .then(data=>{
             console.log(data)
