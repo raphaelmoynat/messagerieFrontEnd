@@ -12,6 +12,7 @@ function run(){
             createFormMessage()
             deleteButton()
             editButton()
+            replyButton()
         })
     }
 }
@@ -66,7 +67,7 @@ function login(){
         body : JSON.stringify(corpsRequeteLogin)
     }
 
-    fetch(`https://b1messenger.imatrythis.tk/login`, loginParams)
+    fetch(`https://b1messenger.imatrythis.com/login`, loginParams)
         .then(response=>response.json())
         .then(data =>{
             if(data.message == "Invalid credentials.")
@@ -113,7 +114,7 @@ function generateMessages(message){
     }
 
     else{
-        replyButton = '<i class="bi bi-arrow-up-right fs-5" style="cursor: pointer;"></i>'
+        replyButton = '<i class="bi bi-arrow-up-right reply fs-5" style="cursor: pointer;" id="${message.id}"></i>'
     }
 
 
@@ -144,6 +145,7 @@ function renderMessages(messages){
     render(contentMessages)
     deleteButton()
     editButton()
+    replyButton()
 }
 
 
@@ -161,6 +163,7 @@ function createFormMessage(){
 
         if (messageId) {
             editMessage(messageId)
+            replyMessage(messageId)
         } else {
             postMessage(messageContent)
         }
@@ -186,7 +189,7 @@ async function postMessage(){
         body :  JSON.stringify(corpsMessage)
     }
 
-    return await fetch(`https://b1messenger.imatrythis.tk/api/messages/new`, messageParams)
+    return await fetch(`https://b1messenger.imatrythis.com/api/messages/new`, messageParams)
         .then(response => response.json())
         .then(data=>{
             console.log(data)
@@ -257,8 +260,40 @@ async function editMessage(idMessage){
         })
 }
 
-
 function replyButton(){
+    const replyButtons = document.querySelectorAll('.reply')
+    replyButtons.forEach((button) => {
+        button.addEventListener('click', ()=> {
+            console.log("coucou")
+            messageId = button.id
+
+        })
+    })
+}
+
+
+async function replyMessage(idMessage){
+    const messageContent = document.querySelector('#messageContent').value
+
+
+    const repliedMessage = {
+        content: messageContent + " replied"
+    }
+
+    const messageParams = {
+        method : "POST",
+        headers : {"Content-type":"application/json",
+            "Authorization":`Bearer ${token}`},
+        body : JSON.stringify(repliedMessage)
+    }
+
+    return await fetch(`https://b1messenger.imatrythis.com/api/responses/${idMessage}/new`, messageParams)
+        .then(response => response.json())
+        .then(data=>{
+            console.log(data)
+            messageId = null
+            run()
+        })
 
 }
 
